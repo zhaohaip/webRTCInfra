@@ -5,23 +5,16 @@ import (
 )
 
 func NewWebsocketServiceResponse(clientID, msgType string, err error) ([]byte, error) {
-	errMsg := ""
-	if err != nil {
-		errMsg = err.Error()
-	}
 	res := &SignalingResponse{
-		Type:     msgType,
-		ErrorMsg: errMsg,
-		SDPMessage: SDPMessage{
-			From: "service",
-			To:   clientID,
-		},
+		Type: msgType,
 	}
 
-	resByte, err := json.Marshal(res)
 	if err != nil {
-		return nil, err
+		res.ErrorMsg = err.Error()
+	} else {
+		res.SDPMessage.From = "service"
+		res.SDPMessage.To = clientID
 	}
 
-	return resByte, nil
+	return json.Marshal(res)
 }

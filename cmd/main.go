@@ -1,18 +1,27 @@
 package main
 
 import (
-	"signalingServer/pkg/api"
-	"signalingServer/pkg/app"
-
-	"github.com/gin-gonic/gin"
+	"log"
+	"os"
+	"os/signal"
+	"signalingServer/pkg/entry"
+	"syscall"
 )
 
 func main() {
-	g := gin.Default()
-	svc := app.NewService()
+	httpAddr := ":8080" // HTTP服务地址
+	stunAddr := ":3478" // STUN服务地址
 
-	h := api.NewHandler(svc)
-	h.RegisterRoutes(g)
+	server := entry.NewServer(httpAddr, stunAddr)
+	if err := server.Start(); err != nil {
+		log.Fatalf("failed to start server：%v", err)
+	}
 
-	g.Run(":8080")
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	log.Println("shutting down server...")
+	server.Close()
+	log.Println("server closed")
 }

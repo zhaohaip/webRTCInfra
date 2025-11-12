@@ -1,4 +1,4 @@
-package test
+package e2e
 
 import (
 	"encoding/json"
@@ -154,7 +154,7 @@ func TestSignalingServerE2E(t *testing.T) {
 	})
 	t.Run("异常：无用户名连接", func(t *testing.T) {
 		_, err := createConnectWS("")
-		assert.Error(t, err, "should fail without name param")
+		assert.Error(t, err, "missing username")
 	})
 
 	t.Run("异常：发送非法信令", func(t *testing.T) {
@@ -170,14 +170,14 @@ func TestSignalingServerE2E(t *testing.T) {
 		ClientSendAbnormalMessage(t, "this is not json", &ClientMsg{clientA, idA}, "invalid character")
 
 		// 向服务器发送不支持的信令类型
-		ClientSendAbnormalMessage(t, `{"type":"invalid"}`, &ClientMsg{clientA, idA}, "unsupported signaling type")
+		ClientSendAbnormalMessage(t, `{"from":"test","type":"invalid","to":"test"}`, &ClientMsg{clientA, idA}, "unsupported signaling type")
 
 		// 向服务器发送空的信令内容
-		ClientSendAbnormalMessage(t, `{"type":"offer"}`, &ClientMsg{clientA, idA}, "cannot be empty")
+		ClientSendAbnormalMessage(t, `{"type":"offer"}`, &ClientMsg{clientA, idA}, "missing 'from' field")
 
 		// 向服务器发送信令给不存在的客户端
 		msg := fmt.Sprintf(`{"type":"offer","from":"%s","to":"none","sdp":"v=0..."}`, idA)
-		ClientSendAbnormalMessage(t, msg, &ClientMsg{clientA, idA}, "client none not found")
+		ClientSendAbnormalMessage(t, msg, &ClientMsg{clientA, idA}, "target user none not found")
 
 		// 由于服务端解析失败不会中断连接，应仍能继续收发
 		time.Sleep(200 * time.Millisecond)
