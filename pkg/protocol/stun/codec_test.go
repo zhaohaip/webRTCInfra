@@ -437,7 +437,7 @@ func TestEncode(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := Encode(tt.msg)
+			got := Encode(&tt.msg)
 			if tt.check != nil {
 				tt.check(t, got)
 			}

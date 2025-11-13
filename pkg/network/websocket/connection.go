@@ -6,22 +6,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// 连接回调函数定义
-
-type OnMessageFunc func(userID string, data []byte) // 收到消息时回调
-type OnCloseFunc func(userID string)                // 连接关闭时回调
-
 // Connection 封装单个WebSocket连接，仅处理网络读写
 type Connection struct {
 	Conn      *websocket.Conn
 	UserName  string
 	UserID    string
 	SendMsg   chan []byte
-	OnMessage OnMessageFunc
-	OnClose   OnCloseFunc
+	OnMessage func(userID string, data []byte)
+	OnClose   func(userID string)
 }
 
-func NewConnection(userName string, userID string, conn *websocket.Conn, onClose OnCloseFunc) *Connection {
+func NewConnection(userName string, userID string, conn *websocket.Conn, onClose func(userID string)) *Connection {
 	return &Connection{
 		Conn:     conn,
 		UserName: userName,
@@ -31,22 +26,29 @@ func NewConnection(userName string, userID string, conn *websocket.Conn, onClose
 	}
 }
 
-func (c *Connection) SetOnMessage(fn OnMessageFunc) {
+func (c *Connection) SetOnMessage(fn func(userID string, data []byte)) {
 	c.OnMessage = fn
 }
 
 // ReadLoop 读取WebSocket消息（仅负责读，不解析业务）
 func (c *Connection) ReadLoop() {
 	defer func() {
-		c.OnClose(c.UserID) // 通知管理器移除该客户端
 		c.Conn.Close()
 		close(c.SendMsg)
+		if c.OnClose != nil {
+			c.OnClose(c.UserID)
+		}
 	}()
 
 	for {
 		_, data, err := c.Conn.ReadMessage()
 		if err != nil {
-			log.Printf("user [%s/%s] read error: %v", c.UserName, c.UserID, err)
+			// 区分正常关闭和异常情况
+			if _, ok := err.(*websocket.CloseError); ok {
+				log.Printf("user [%s/%s] connection closed normally: %v", c.UserName, c.UserID, err)
+			} else {
+				log.Printf("user [%s/%s] read error: %v", c.UserName, c.UserID, err)
+			}
 			break
 		}
 

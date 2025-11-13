@@ -4,7 +4,10 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 )
+
+var UDPTimeOut = time.Second * 5
 
 // Server UDP服务器，负责监听端口并分发数据包
 type Server struct {
@@ -46,6 +49,13 @@ func (s *Server) Start() error {
 	return nil
 }
 
+// 定义数据包缓存池
+var packetPool = sync.Pool{
+	New: func() interface{} {
+		return make([]byte, 1024)
+	},
+}
+
 func (s *Server) ListenLoop() {
 	buf := make([]byte, 1024)
 	for !s.close {
@@ -57,14 +67,12 @@ func (s *Server) ListenLoop() {
 			return
 		}
 
-		packet := make([]byte, n)
+		// 从缓存池中获取内存
+		packet := packetPool.Get().([]byte)[:n]
 		copy(packet, buf[:n])
 
 		conn := s.getOrCreateClient(clientAddr)
-
-		// 分发数据到对应客户端通道
-		go conn.SavePacket(packet)
-
+		conn.SavePacket(packet) // 将数据分发至通道
 	}
 }
 
@@ -80,27 +88,37 @@ func (s *Server) getOrCreateClient(clientAddr *net.UDPAddr) *Connection {
 		s.clients[clientKey] = conn
 		s.mu.Unlock()
 
-		go s.handleClient(conn)
+		go s.handlePackets(conn)
 	}
 	log.Printf("client %s connected", clientAddr.String())
 
 	return conn
 }
 
-func (s *Server) handleClient(conn *Connection) {
+func (s *Server) handlePackets(conn *Connection) {
+	ticker := time.NewTicker(UDPTimeOut)
 	clientAddr := conn.GetRemoteAddr().String()
-
 	defer func() {
 		s.mu.Lock()
 		delete(s.clients, clientAddr)
 		s.mu.Unlock()
 		conn.Close()
-		log.Printf("client %s disconnected", clientAddr)
 	}()
 
 	// 从通道中读取分发的数据包，调用业务层回调处理
-	for pocket := range conn.Receive() {
-		s.onPacket(conn, pocket)
+	for {
+		select {
+		case pocket := <-conn.Receive():
+			if s.onPacket != nil {
+				s.onPacket(conn, pocket) // 处理数据包
+				ticker.Reset(UDPTimeOut) // 重置超时计时器
+			}
+			packetPool.Put(pocket) // 处理完成后将内存放回缓存池
+
+		case <-ticker.C:
+			log.Printf("client %s timeout, close connection", clientAddr)
+			return
+		}
 	}
 }
 

@@ -34,6 +34,7 @@ func (c *Connection) SavePacket(packet []byte) {
 	select {
 	case c.recvChan <- packet:
 	default:
+		packetPool.Put(packet) // 释放内存
 		log.Println("udp recv queue full")
 	}
 }
