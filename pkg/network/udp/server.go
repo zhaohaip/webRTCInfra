@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var UDPTimeOut = time.Second * 5
+var UDPTimeOut = time.Minute * 5
 
 // Server UDP服务器，负责监听端口并分发数据包
 type Server struct {
