@@ -4,8 +4,8 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"signalingServer/pkg/entry"
 	"syscall"
+	"webRTCInfra/pkg/entry"
 )
 
 func main() {

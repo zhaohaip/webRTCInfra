@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"signalingServer/pkg/common"
 	"testing"
 	"time"
+	"webRTCInfra/pkg/common"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -133,7 +133,7 @@ func ClientSendAbnormalMessage(t *testing.T, msg string, fromClient *ClientMsg, 
 	assert.Contains(t, resp["errorMsg"], containsErr)
 }
 
-func TestSignalingServerE2E(t *testing.T) {
+func TestSDPE2E(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	t.Run("E2E测试-客户端正常连接和注册", func(t *testing.T) {

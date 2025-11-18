@@ -3,8 +3,8 @@ package sdp
 import (
 	"encoding/json"
 	"fmt"
-	"signalingServer/pkg/common"
-	"signalingServer/pkg/network/websocket"
+	"webRTCInfra/pkg/common"
+	"webRTCInfra/pkg/network/websocket"
 )
 
 // Signaler 信令处理器

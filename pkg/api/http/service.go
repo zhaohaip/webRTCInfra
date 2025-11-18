@@ -3,8 +3,8 @@ package http
 import (
 	"log"
 	"net/http"
-	"signalingServer/pkg/common"
-	"signalingServer/pkg/service/sdp"
+	"webRTCInfra/pkg/common"
+	"webRTCInfra/pkg/service/sdp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"

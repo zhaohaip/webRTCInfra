@@ -2,8 +2,8 @@ package stun
 
 import (
 	"log"
-	"signalingServer/pkg/network/udp"
-	"signalingServer/pkg/protocol/stun"
+	"webRTCInfra/pkg/network/udp"
+	"webRTCInfra/pkg/protocol/stun"
 )
 
 type Service struct {

@@ -1,8 +1,8 @@
 package sdp
 
 import (
-	"signalingServer/pkg/common"
-	netwebsocket "signalingServer/pkg/network/websocket"
+	"webRTCInfra/pkg/common"
+	netwebsocket "webRTCInfra/pkg/network/websocket"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"

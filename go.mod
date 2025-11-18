@@ -1,4 +1,4 @@
-module signalingServer
+module webRTCInfra
 
 go 1.23.0
 

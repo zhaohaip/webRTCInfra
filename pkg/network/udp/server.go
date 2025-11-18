@@ -108,8 +108,8 @@ func (s *Server) handlePackets(conn *Connection) {
 	// 从通道中读取分发的数据包，调用业务层回调处理
 	for {
 		select {
-		case pocket := <-conn.Receive():
-			if s.onPacket != nil {
+		case pocket, ok := <-conn.Receive():
+			if s.onPacket != nil && ok {
 				s.onPacket(conn, pocket) // 处理数据包
 				ticker.Reset(UDPTimeOut) // 重置超时计时器
 			}

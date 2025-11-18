@@ -2,12 +2,12 @@ package entry
 
 import (
 	"log"
-	"signalingServer/pkg/api/http"
-	"signalingServer/pkg/network/udp"
-	"signalingServer/pkg/network/websocket"
-	"signalingServer/pkg/service/sdp"
-	"signalingServer/pkg/service/stun"
 	"sync"
+	"webRTCInfra/pkg/api/http"
+	"webRTCInfra/pkg/network/udp"
+	"webRTCInfra/pkg/network/websocket"
+	"webRTCInfra/pkg/service/sdp"
+	"webRTCInfra/pkg/service/stun"
 )
 
 type Server struct {
